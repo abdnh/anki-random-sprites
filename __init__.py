@@ -129,8 +129,8 @@ class SettingsTab(QWidget):
         hbox.addStretch(1)
         layout.addStretch(1)
         line = QFrame()
-        line.setFrameShape(QFrame.HLine)
-        line.setFrameShadow(QFrame.Sunken) 
+        line.setFrameShape(QFrame.Shape.HLine)
+        line.setFrameShadow(QFrame.Shadow.Sunken) 
         layout.addWidget(line)
         layout.addSpacing(10)
         layout.addWidget(QLabel("""Replaces the script (_procgen.js) in Anki's media folder with the current settings.
@@ -275,7 +275,7 @@ class InfoTab(QWidget):
 
         layout = QVBoxLayout()
         s_lbl = QLabel("<b>How to setup:</b>")
-        s_lbl.setAlignment(Qt.AlignCenter)
+        s_lbl.setAlignment(Qt.AlignmentFlag.AlignCenter)
         layout.addWidget(s_lbl)
 
         layout.addWidget(QLabel("""
@@ -330,7 +330,7 @@ class InfoDialog(QDialog):
     """ Can be opened in the Tools menu, displays some help. """
 
     def __init__(self, parent):
-        QDialog.__init__(self, parent, Qt.WindowSystemMenuHint | Qt.WindowTitleHint | Qt.WindowCloseButtonHint | Qt.WindowMaximizeButtonHint)
+        QDialog.__init__(self, parent, Qt.WindowType.WindowSystemMenuHint | Qt.WindowType.WindowTitleHint | Qt.WindowType.WindowCloseButtonHint | Qt.WindowType.WindowMaximizeButtonHint)
 
         self.mw         = aqt.mw
         self.parent     = parent
