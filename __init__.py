@@ -28,6 +28,8 @@ import base64
 import time
 from typing import Any, Optional, Tuple
 
+enable_globally = False
+
 def init_addon():
     """ Add action to "Tools" menu and register hook to check for _procgen.js file. """
 
@@ -37,7 +39,10 @@ def init_addon():
 
     gui_hooks.collection_did_load.append(after_collection_did_load)
     gui_hooks.webview_did_receive_js_message.append(expanded_on_bridge_cmd)
-
+    gui_hooks.card_will_show.append(on_card_will_show)
+    config = mw.addonManager.getConfig(__name__)
+    global enable_globally
+    enable_globally = config['enable_globally']
 
 def after_collection_did_load(col: "Collection"):
     """ Check if add-on js file is in media folder, if not, insert it. """
@@ -67,6 +72,17 @@ def expanded_on_bridge_cmd(handled: Tuple[bool, Any], cmd: str, self: Any) -> Tu
 
     return handled
 
+def on_card_will_show(text: str, card: "Card", kind: str) -> str:
+    html = ''
+    if enable_globally and kind.endswith("Answer"):
+        with open(addon_folder() + "_procgen.js", "r") as file:
+            html += "<div id='procgen_canvas'></div>"
+            html += """
+            <script>
+document.body.append(Object.assign(document.createElement('script'),{ src:"_procgen.js"}));
+</script>
+            """
+    return html + text
 
 def addon_folder() -> str:
     """ Absolute path to add-on folder. """
@@ -120,6 +136,11 @@ class SettingsTab(QWidget):
         layout.addLayout(zoom_hb)
         layout.addSpacing(20)
 
+        self.enable_globally_cb = QCheckBox("Enable on the back side of all cards (only works on computer version)")
+        self.enable_globally_cb.setChecked(self.config["enable_globally"])
+        self.enable_globally_cb.stateChanged.connect(self.update_enable_globally)
+        layout.addWidget(self.enable_globally_cb)
+        layout.addSpacing(20)
 
         hbox = QHBoxLayout()
         replace_btn = QPushButton("Replace Script")
@@ -146,6 +167,12 @@ Use this after you changed any settings."""))
     def update_effect_animation(self, state):
         self.config["use_effect_animation"] = self.effects_cb.isChecked()
         mw.addonManager.writeConfig(__name__, self.config)
+
+    def update_enable_globally(self, state):
+        self.config["enable_globally"] = self.enable_globally_cb.isChecked()
+        mw.addonManager.writeConfig(__name__, self.config)
+        global enable_globally
+        enable_globally = self.config["enable_globally"]
 
     def zoom_changed(self, zoom):
         self.config["zoom"] = zoom
